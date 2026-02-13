@@ -1,0 +1,10 @@
+{
+  "name": "YuGo Eats",
+  "description": "Couples food ordering app with shared menu, cart, orders, reviews, and stats",
+  "icon": "./public/icon.svg",
+  "defaultPort": 3000,
+  "env": {
+    "DEV_MODE": "false",
+    "DATABASE_PATH": "/app/data/yugo-eats.db"
+  }
+}

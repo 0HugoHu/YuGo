@@ -35,6 +35,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/seed-docker.js ./seed-docker.js
 
 RUN mkdir -p /app/data /app/public/uploads && chown -R nextjs:nodejs /app/data /app/public/uploads
 
+# Declare volumes for data persistence (DB + uploaded images)
+VOLUME ["/app/data", "/app/public/uploads"]
+
 USER nextjs
 
 EXPOSE 3000
