@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+.idea/
+screenshots/
 
 # debug
 npm-debug.log*
@@ -35,6 +37,10 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# data
+/data/
+/public/uploads/
 
 # typescript
 *.tsbuildinfo

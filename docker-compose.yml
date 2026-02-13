@@ -1,0 +1,20 @@
+services:
+  yugo-eats:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - yugo-data:/app/data
+      - yugo-uploads:/app/public/uploads
+    environment:
+      - DEV_MODE=${DEV_MODE:-true}
+      - DATABASE_PATH=/app/data/yugo-eats.db
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID:-}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN:-}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER:-}
+      - HUGO_PHONE_NUMBER=${HUGO_PHONE_NUMBER:-}
+    restart: unless-stopped
+
+volumes:
+  yugo-data:
+  yugo-uploads:

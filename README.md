@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YuGo Eats
+
+A couples' food ordering app built for Hugo and Yuge. Browse a shared menu, add dishes to a real-time shared cart, place orders, leave reviews, and track fun stats together.
+
+## Features
+
+- **Shared Menu** — Browse dishes with photos, spice levels, prep times, and ratings
+- **Shared Cart** — Both users see the same cart in real time with colored tags showing who added what
+- **Order Tracking** — Place orders and follow their status (pending, cooking, ready, completed)
+- **Reviews** — Rate and comment on dishes after completing an order
+- **Stats Dashboard** — Days together counter, per-person favorites, spice tolerance trend graph, dish leaderboard, and orders-by-day chart
+- **Admin Panel** — Manage dishes (CRUD + photo upload), orders, reviews, users, and settings behind a password
+- **Device Fingerprinting** — Automatic role detection based on registered device
+- **SMS Notifications** — Optional Twilio integration for new order alerts
+- **PWA Ready** — Installable as a home screen app
+
+## Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, standalone output)
+- **Database**: SQLite via [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) + [Drizzle ORM](https://orm.drizzle.team/)
+- **UI**: [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/), [Framer Motion](https://www.framer.com/motion/)
+- **Image Processing**: [Sharp](https://sharp.pixelplumbing.com/) (auto WebP conversion + thumbnails)
+- **Deployment**: Docker (multi-stage build, Alpine)
 
 ## Getting Started
 
-First, run the development server:
+### Docker (recommended)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up --build -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app starts at [http://localhost:3000](http://localhost:3000). An admin password is generated on first run — check the logs:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+docker compose logs | grep "Admin password"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Local Development
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Variable | Description | Default |
+|---|---|---|
+| `DEV_MODE` | Show dev role switcher bar | `true` |
+| `DATABASE_PATH` | SQLite database file path | `./data/yugo-eats.db` |
+| `TWILIO_ACCOUNT_SID` | Twilio account SID (optional) | — |
+| `TWILIO_AUTH_TOKEN` | Twilio auth token (optional) | — |
+| `TWILIO_PHONE_NUMBER` | Twilio sender number (optional) | — |
+| `HUGO_PHONE_NUMBER` | Hugo's phone for notifications (optional) | — |
 
-## Deploy on Vercel
+## Data Persistence
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Docker volumes keep data across rebuilds:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `yugo-data` — SQLite database (orders, reviews, users, settings)
+- `yugo-uploads` — Uploaded dish and review photos
+
+Only `docker compose down -v` deletes volumes. Normal rebuilds preserve all data.
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── admin/         # Admin login + dashboard
+│   ├── api/           # REST API routes
+│   │   ├── auth/      # Device fingerprint auth
+│   │   ├── cart/      # Shared cart CRUD
+│   │   ├── config/    # Runtime config (dev mode)
+│   │   ├── dishes/    # Menu CRUD
+│   │   ├── orders/    # Order lifecycle
+│   │   ├── reviews/   # Review CRUD
+│   │   ├── stats/     # Analytics queries
+│   │   └── upload/    # Image upload + processing
+│   ├── menu/          # Menu browsing
+│   ├── orders/        # Orders + reviews (merged view)
+│   └── stats/         # Stats dashboard
+├── components/
+│   ├── cart/          # Cart drawer
+│   ├── menu/          # Dish cards + detail sheet
+│   ├── orders/        # Order cards
+│   └── shared/        # Bottom nav, dev switcher
+├── hooks/             # Auth + cart hooks
+└── lib/
+    ├── db/            # Schema + database init
+    └── images.ts      # Sharp image processing
+```
