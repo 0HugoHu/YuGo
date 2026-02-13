@@ -4,7 +4,6 @@
   "icon": "./public/icon.svg",
   "defaultPort": 3000,
   "env": {
-    "DEV_MODE": "false",
-    "DATABASE_PATH": "/app/data/yugo-eats.db"
+    "DEV_MODE": "false"
   }
 }
