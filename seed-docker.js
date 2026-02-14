@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS dishes (
   image_url TEXT,
   thumbnail_url TEXT,
   is_available INTEGER NOT NULL DEFAULT 1,
+  is_recommended INTEGER NOT NULL DEFAULT 0,
   spice_level INTEGER NOT NULL DEFAULT 0,
   prep_time INTEGER NOT NULL DEFAULT 15,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -93,6 +94,20 @@ CREATE TABLE IF NOT EXISTS stats_cache (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 `);
+
+// Schema migrations — add new columns to existing tables safely
+const migrations = [
+  "ALTER TABLE dishes ADD COLUMN is_recommended INTEGER NOT NULL DEFAULT 0",
+];
+
+for (const migration of migrations) {
+  try {
+    db.exec(migration);
+    console.log("Migration applied:", migration.substring(0, 60) + "...");
+  } catch (e) {
+    // Column likely already exists, ignore
+  }
+}
 
 // Seed users
 db.exec(`

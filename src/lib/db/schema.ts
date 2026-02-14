@@ -20,6 +20,7 @@ export const dishes = sqliteTable("dishes", {
   imageUrl: text("image_url"),
   thumbnailUrl: text("thumbnail_url"),
   isAvailable: integer("is_available", { mode: "boolean" }).notNull().default(true),
+  isRecommended: integer("is_recommended", { mode: "boolean" }).notNull().default(false),
   spiceLevel: integer("spice_level").notNull().default(0),
   prepTime: integer("prep_time").notNull().default(15),
   createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),

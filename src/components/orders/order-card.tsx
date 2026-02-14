@@ -105,10 +105,10 @@ export function OrderCard({ order, role, onUpdateStatus, onReview }: OrderCardPr
       </div>
 
       {/* Actions based on role */}
-      {onUpdateStatus && (
+      {onUpdateStatus && (role === "hugo" || role === "yuge") && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {/* Hugo: can start cooking and mark ready */}
-          {role === "hugo" && order.status === "pending" && (
+          {/* Both can start cooking pending orders */}
+          {order.status === "pending" && (
             <>
               <Button size="sm" className="flex-1 rounded-full" onClick={() => onUpdateStatus(order.id, "cooking")}>
                 <ChefHat size={14} className="mr-1" /> Start Cooking
@@ -118,7 +118,7 @@ export function OrderCard({ order, role, onUpdateStatus, onReview }: OrderCardPr
               </Button>
             </>
           )}
-          {role === "hugo" && order.status === "cooking" && (
+          {order.status === "cooking" && (
             <>
               <Button size="sm" className="flex-1 rounded-full" onClick={() => onUpdateStatus(order.id, "ready")}>
                 <Timer size={14} className="mr-1" /> Mark Ready
@@ -129,8 +129,8 @@ export function OrderCard({ order, role, onUpdateStatus, onReview }: OrderCardPr
             </>
           )}
 
-          {/* Yuge: can confirm receipt + review when ready */}
-          {role === "yuge" && order.status === "ready" && (
+          {/* Both can confirm receipt + review when ready */}
+          {order.status === "ready" && (
             <Button size="sm" className="flex-1 rounded-full" onClick={() => {
               onUpdateStatus(order.id, "completed");
               if (onReview) onReview(order);
@@ -140,7 +140,7 @@ export function OrderCard({ order, role, onUpdateStatus, onReview }: OrderCardPr
           )}
 
           {/* Both can review completed orders */}
-          {(role === "hugo" || role === "yuge") && order.status === "completed" && onReview && (
+          {order.status === "completed" && onReview && (
             <Button size="sm" variant="outline" className="flex-1 rounded-full" onClick={() => onReview(order)}>
               <Star size={14} className="mr-1" /> Leave Review
             </Button>

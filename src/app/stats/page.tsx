@@ -50,14 +50,6 @@ function SpiceTrendChart({ data }: { data: SpiceTrendPoint[] }) {
   const hugoPoints = filtered.filter((d) => d.userId === 1);
   const yugePoints = filtered.filter((d) => d.userId === 2);
 
-  if (filtered.length === 0) {
-    return (
-      <div className="text-center text-sm text-muted-foreground py-4">
-        No spice data for this period
-      </div>
-    );
-  }
-
   const width = 320;
   const height = 100;
   const padX = 30;
@@ -100,44 +92,52 @@ function SpiceTrendChart({ data }: { data: SpiceTrendPoint[] }) {
         ))}
       </div>
 
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full" preserveAspectRatio="xMidYMid meet">
-        {[0, 1, 2, 3, 4, 5].map((v) => (
-          <g key={v}>
-            <line
-              x1={padX} y1={toY(v)} x2={width - padX} y2={toY(v)}
-              stroke="currentColor" strokeOpacity={0.08} strokeWidth={0.5}
-            />
-            <text x={padX - 4} y={toY(v) + 3} textAnchor="end" fontSize={8} fill="currentColor" opacity={0.4}>
-              {v}
-            </text>
-          </g>
-        ))}
-
-        {hugoPoints.length > 1 && (
-          <path d={makePath(hugoPoints)} fill="none" stroke="var(--primary)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-        )}
-        {hugoPoints.map((p) => (
-          <circle key={`h-${p.orderId}`} cx={toX(p.date)} cy={toY(p.avgSpice)} r={3} fill="var(--primary)" />
-        ))}
-
-        {yugePoints.length > 1 && (
-          <path d={makePath(yugePoints)} fill="none" stroke="var(--primary)" strokeOpacity={0.45} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-        )}
-        {yugePoints.map((p) => (
-          <circle key={`y-${p.orderId}`} cx={toX(p.date)} cy={toY(p.avgSpice)} r={3} fill="var(--primary)" fillOpacity={0.45} />
-        ))}
-      </svg>
-
-      <div className="flex justify-center gap-4 mt-1.5">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 rounded bg-primary" />
-          <span className="text-[10px] text-muted-foreground">Hugo</span>
+      {filtered.length === 0 ? (
+        <div className="text-center text-sm text-muted-foreground py-4">
+          No spice data for this period
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 rounded bg-primary/45" />
-          <span className="text-[10px] text-muted-foreground">Yuge</span>
-        </div>
-      </div>
+      ) : (
+        <>
+          <svg viewBox={`0 0 ${width} ${height}`} className="w-full" preserveAspectRatio="xMidYMid meet">
+            {[0, 1, 2, 3, 4, 5].map((v) => (
+              <g key={v}>
+                <line
+                  x1={padX} y1={toY(v)} x2={width - padX} y2={toY(v)}
+                  stroke="currentColor" strokeOpacity={0.08} strokeWidth={0.5}
+                />
+                <text x={padX - 4} y={toY(v) + 3} textAnchor="end" fontSize={8} fill="currentColor" opacity={0.4}>
+                  {v}
+                </text>
+              </g>
+            ))}
+
+            {hugoPoints.length > 1 && (
+              <path d={makePath(hugoPoints)} fill="none" stroke="var(--primary)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+            )}
+            {hugoPoints.map((p) => (
+              <circle key={`h-${p.orderId}`} cx={toX(p.date)} cy={toY(p.avgSpice)} r={3} fill="var(--primary)" />
+            ))}
+
+            {yugePoints.length > 1 && (
+              <path d={makePath(yugePoints)} fill="none" stroke="var(--primary)" strokeOpacity={0.45} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+            )}
+            {yugePoints.map((p) => (
+              <circle key={`y-${p.orderId}`} cx={toX(p.date)} cy={toY(p.avgSpice)} r={3} fill="var(--primary)" fillOpacity={0.45} />
+            ))}
+          </svg>
+
+          <div className="flex justify-center gap-4 mt-1.5">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-0.5 rounded bg-primary" />
+              <span className="text-[10px] text-muted-foreground">Hugo</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-0.5 rounded bg-primary/45" />
+              <span className="text-[10px] text-muted-foreground">Yuge</span>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

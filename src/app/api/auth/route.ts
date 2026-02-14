@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
+const isDevMode = process.env.DEV_MODE === "true";
+
 export async function POST(req: NextRequest) {
   const { role, fingerprint } = await req.json();
 
@@ -25,6 +27,15 @@ export async function POST(req: NextRequest) {
   if (role === "hugo" || role === "yuge") {
     const user = db.select().from(users).where(eq(users.role, role)).get();
     if (user) {
+      // If the user already has a fingerprint registered and this is a different device,
+      // reject in production mode (only the registered device can log in)
+      if (user.fingerprint && user.fingerprint !== fingerprint && !isDevMode) {
+        return NextResponse.json(
+          { error: "This role is already registered to another device. Access denied." },
+          { status: 403 }
+        );
+      }
+
       db.update(users)
         .set({ fingerprint, isWhitelisted: true })
         .where(eq(users.id, user.id))

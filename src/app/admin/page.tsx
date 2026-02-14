@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock } from "lucide-react";
+import { Lock, ArrowLeft } from "lucide-react";
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
@@ -95,9 +95,18 @@ export default function AdminLoginPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Check the server logs for the admin password on first run.
-        </p>
+        <div className="mt-6 flex flex-col items-center gap-2">
+          <button
+            onClick={() => router.push("/menu")}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft size={14} />
+            Back to app
+          </button>
+          <p className="text-xs text-muted-foreground">
+            Check the server logs for the admin password on first run.
+          </p>
+        </div>
       </motion.div>
     </div>
   );

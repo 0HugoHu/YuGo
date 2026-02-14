@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
+import { haptic } from "@/lib/haptics";
 
 interface ReviewData {
   id: number;
@@ -52,7 +53,8 @@ export default function OrdersPage() {
 
   const fetchOrders = useCallback(() => {
     if (!userId) return;
-    const url = role === "hugo" ? "/api/orders" : `/api/orders?userId=${userId}`;
+    // Both Hugo and Yuge see all orders
+    const url = (role === "hugo" || role === "yuge") ? "/api/orders" : `/api/orders?userId=${userId}`;
     fetch(url)
       .then((r) => r.json())
       .then((data) => { setOrders(data); setLoading(false); })
@@ -81,11 +83,28 @@ export default function OrdersPage() {
         body: JSON.stringify({ orderId, status }),
       });
       if (!res.ok) throw new Error();
+      haptic("medium");
       toast.success(`Order #${orderId} → ${status}`);
       fetchOrders();
     } catch {
       toast.error("Failed to update order");
     }
+  };
+
+  // Deduplicate items by dishId for review forms
+  const getUniqueDishes = (items: OrderData["items"]) => {
+    const seen = new Map<number, OrderData["items"][0]>();
+    for (const item of items) {
+      if (!item.dishId) continue;
+      if (seen.has(item.dishId)) {
+        // Merge quantities
+        const existing = seen.get(item.dishId)!;
+        seen.set(item.dishId, { ...existing, quantity: existing.quantity + item.quantity });
+      } else {
+        seen.set(item.dishId, item);
+      }
+    }
+    return Array.from(seen.values());
   };
 
   const handleReview = (order: OrderData) => {
@@ -102,7 +121,7 @@ export default function OrdersPage() {
     if (!reviewOrder || !userId) return;
     setSubmittingReview(true);
     try {
-      for (const item of reviewOrder.items) {
+      for (const item of getUniqueDishes(reviewOrder.items)) {
         if (!item.dishId) continue;
         await fetch("/api/reviews", {
           method: "POST",
@@ -116,6 +135,7 @@ export default function OrdersPage() {
           }),
         });
       }
+      haptic("medium");
       toast.success("Review submitted!");
       setReviewOrder(null);
       fetchReviews();
@@ -148,7 +168,7 @@ export default function OrdersPage() {
     if (!currentStandaloneOrder || !userId) return;
     setSubmittingStandalone(true);
     try {
-      for (const item of currentStandaloneOrder.items) {
+      for (const item of getUniqueDishes(currentStandaloneOrder.items)) {
         if (!item.dishId) continue;
         await fetch("/api/reviews", {
           method: "POST",
@@ -162,6 +182,7 @@ export default function OrdersPage() {
           }),
         });
       }
+      haptic("medium");
       toast.success("Review submitted!");
       setIsReviewOpen(false);
       setSelectedOrder("");
@@ -284,7 +305,7 @@ export default function OrdersPage() {
                             <>
                               <div className="space-y-3">
                                 <p className="text-sm font-medium">Rate each dish:</p>
-                                {currentStandaloneOrder.items.map((item) => (
+                                {getUniqueDishes(currentStandaloneOrder.items).map((item) => (
                                   item.dishId ? (
                                     <div key={item.dishId} className="flex items-center justify-between gap-2 rounded-xl border p-3">
                                       <span className="text-sm font-medium flex-1">
@@ -350,7 +371,7 @@ export default function OrdersPage() {
               <div className="space-y-4 mt-2">
                 <div className="space-y-3">
                   <p className="text-sm font-medium">Rate each dish:</p>
-                  {reviewOrder.items.map((item) => (
+                  {getUniqueDishes(reviewOrder.items).map((item) => (
                     item.dishId ? (
                       <div key={item.dishId} className="flex items-center justify-between gap-2 rounded-xl border p-3">
                         <span className="text-sm font-medium flex-1">

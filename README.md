@@ -4,15 +4,17 @@ A couples' food ordering app built for Hugo and Yuge. Browse a shared menu, add 
 
 ## Features
 
-- **Shared Menu** — Browse dishes with photos, spice levels, prep times, and ratings
+- **Shared Menu** — Browse dishes with photos, spice levels, prep times, ratings, and Chef's Pick recommendations
+- **Search & Sort** — Search dishes by name/description, sort by price, rating, prep time, or popularity
 - **Shared Cart** — Both users see the same cart in real time with colored tags showing who added what
 - **Order Tracking** — Place orders and follow their status (pending, cooking, ready, completed)
-- **Reviews** — Rate and comment on dishes after completing an order
+- **Reviews** — Both users can rate and comment on dishes after completing an order
 - **Stats Dashboard** — Days together counter, per-person favorites, spice tolerance trend graph, dish leaderboard, and orders-by-day chart
 - **Admin Panel** — Manage dishes (CRUD + photo upload), orders, reviews, users, and settings behind a password
-- **Device Fingerprinting** — Automatic role detection based on registered device
+- **Device Fingerprinting** — Automatic role detection with per-device lockdown in production
+- **Haptic Feedback** — Vibration (Android) and audio click (iOS/all platforms) on key actions
 - **SMS Notifications** — Optional Twilio integration for new order alerts
-- **PWA Ready** — Installable as a home screen app
+- **PWA Ready** — Installable as a home screen app with safe area support
 
 ## Tech Stack
 
@@ -91,5 +93,6 @@ src/
 ├── hooks/             # Auth + cart hooks
 └── lib/
     ├── db/            # Schema + database init
+    ├── haptics.ts     # Cross-platform haptic feedback
     └── images.ts      # Sharp image processing
 ```

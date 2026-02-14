@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Flame, Clock, Star } from "lucide-react";
+import { Plus, Flame, Clock, Star, Check } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
+import { haptic } from "@/lib/haptics";
 
 export interface DishData {
   id: number;
@@ -19,8 +21,10 @@ export interface DishData {
   spiceLevel: number;
   prepTime: number;
   isAvailable: boolean;
+  isRecommended?: boolean;
   avgRating: number | null;
   reviewCount: number;
+  timesOrdered: number;
 }
 
 interface DishCardProps {
@@ -32,6 +36,7 @@ export function DishCard({ dish, onSelect }: DishCardProps) {
   const { role } = useAuth();
   const { addItem } = useCart();
   const canOrder = role === "hugo" || role === "yuge";
+  const [justAdded, setJustAdded] = useState(false);
 
   return (
     <motion.div
@@ -55,6 +60,13 @@ export function DishCard({ dish, onSelect }: DishCardProps) {
         ) : (
           <div className="flex h-full items-center justify-center text-4xl">
             🍜
+          </div>
+        )}
+        {dish.isRecommended && (
+          <div className="absolute top-2 left-2 z-10">
+            <Badge className="bg-amber-500 text-white border-0 text-[10px] gap-0.5 px-1.5 py-0.5 shadow-sm">
+              <Star size={10} className="fill-white" /> Chef&apos;s Pick
+            </Badge>
           </div>
         )}
         {!dish.isAvailable && (
@@ -96,16 +108,28 @@ export function DishCard({ dish, onSelect }: DishCardProps) {
             className="mt-2 h-8 w-full rounded-full text-xs"
             onClick={(e) => {
               e.stopPropagation();
+              haptic("medium");
               addItem({
                 dishId: dish.id,
                 name: dish.name,
                 price: dish.price,
                 thumbnailUrl: dish.thumbnailUrl || undefined,
               });
+              setJustAdded(true);
+              setTimeout(() => setJustAdded(false), 500);
             }}
           >
-            <Plus size={14} className="mr-1" />
-            Add
+            {justAdded ? (
+              <>
+                <Check size={14} className="mr-1" />
+                Added
+              </>
+            ) : (
+              <>
+                <Plus size={14} className="mr-1" />
+                Add
+              </>
+            )}
           </Button>
         )}
       </div>

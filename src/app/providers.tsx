@@ -12,7 +12,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <CartProvider>
         <DevRoleSwitcher />
         {children}
-        <Toaster position="top-center" richColors />
+        <Toaster position="top-center" richColors duration={1500} />
       </CartProvider>
     </AuthProvider>
   );

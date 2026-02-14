@@ -31,7 +31,7 @@ export function BottomNav() {
   return (
     <>
       {/* Bottom Nav Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[env(safe-area-inset-bottom,2px)]">
         <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-1">
           {visibleItems.map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
@@ -40,14 +40,14 @@ export function BottomNav() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 px-3 py-2 text-[11px] font-medium transition-colors",
+                  "relative flex flex-col items-center gap-1 px-4 py-2 text-[11px] font-medium transition-colors",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="nav-indicator"
-                    className="absolute -top-1 h-0.5 w-8 rounded-full bg-primary"
+                    className="absolute -top-2 h-0.5 w-10 rounded-full bg-primary"
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}

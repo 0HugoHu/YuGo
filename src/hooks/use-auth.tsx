@@ -71,7 +71,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ role, fingerprint }),
     });
 
-    if (!res.ok) throw new Error("Auth failed");
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || "Auth failed");
+    }
     const data = await res.json();
 
     const newState: AuthState = {

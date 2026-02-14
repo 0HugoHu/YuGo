@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { dishes, reviews } from "@/lib/db/schema";
+import { dishes, reviews, orderItems } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
@@ -26,12 +26,25 @@ export async function GET(req: NextRequest) {
 
   const ratingMap = new Map(ratings.map((r) => [r.dishId, r]));
 
+  // Get times ordered per dish
+  const orderCounts = db
+    .select({
+      dishId: orderItems.dishId,
+      timesOrdered: sql<number>`sum(${orderItems.quantity})`,
+    })
+    .from(orderItems)
+    .groupBy(orderItems.dishId)
+    .all();
+
+  const orderCountMap = new Map(orderCounts.map((o) => [o.dishId, o.timesOrdered]));
+
   const result = allDishes.map((d) => {
     const r = ratingMap.get(d.id);
     return {
       ...d,
       avgRating: r ? Math.round(r.avgRating * 10) / 10 : null,
       reviewCount: r ? r.reviewCount : 0,
+      timesOrdered: orderCountMap.get(d.id) || 0,
     };
   });
 
@@ -40,7 +53,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, description, price, category, imageUrl, thumbnailUrl, spiceLevel, prepTime } = body;
+  const { name, description, price, category, imageUrl, thumbnailUrl, spiceLevel, prepTime, isRecommended } = body;
 
   if (!name || !category) {
     return NextResponse.json({ error: "Name and category are required" }, { status: 400 });
@@ -53,6 +66,7 @@ export async function POST(req: NextRequest) {
     category,
     imageUrl: imageUrl || null,
     thumbnailUrl: thumbnailUrl || null,
+    isRecommended: isRecommended || false,
     spiceLevel: spiceLevel || 0,
     prepTime: prepTime || 15,
   }).returning().get();

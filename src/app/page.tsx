@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ChefHat, Heart, Eye } from "lucide-react";
+import { toast } from "sonner";
 
 export default function LandingPage() {
   const { login } = useAuth();
@@ -17,13 +18,15 @@ export default function LandingPage() {
     try {
       await login(role);
       router.push("/menu");
-    } catch {
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Login failed";
+      toast.error(msg);
       setLoading(null);
     }
   };
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-b from-orange-50 to-background px-6">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-b from-stone-50 to-background px-6">
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -40,7 +43,7 @@ export default function LandingPage() {
         </motion.div>
 
         <h1 className="text-5xl font-extrabold tracking-tight">
-          <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-stone-700 to-stone-900 bg-clip-text text-transparent dark:from-stone-200 dark:to-stone-400">
             YuGo
           </span>{" "}
           Eats
@@ -75,7 +78,7 @@ export default function LandingPage() {
       >
         <Button
           size="lg"
-          className="h-14 rounded-2xl text-base bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white border-0"
+          className="h-14 rounded-2xl text-base"
           onClick={() => handleLogin("yuge")}
           disabled={loading !== null}
         >
@@ -85,7 +88,7 @@ export default function LandingPage() {
 
         <Button
           size="lg"
-          className="h-14 rounded-2xl text-base bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0"
+          className="h-14 rounded-2xl text-base bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 text-white border-0"
           onClick={() => handleLogin("hugo")}
           disabled={loading !== null}
         >
