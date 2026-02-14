@@ -21,6 +21,7 @@ function getDb(): BetterSQLite3Database<typeof schema> {
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");
   sqlite.pragma("busy_timeout = 10000");
+  sqlite.pragma("cache_size = -16000"); // 16MB page cache (default ~2MB)
 
   _db = drizzle(sqlite, { schema });
   return _db;

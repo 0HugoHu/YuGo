@@ -4,6 +4,11 @@
   "icon": "./public/icon.svg",
   "defaultPort": 3000,
   "env": {
-    "DEV_MODE": "false"
-  }
+    "DEV_MODE": "false",
+    "DATABASE_PATH": "/app/yugo-data/data/yugo-eats.db",
+    "UPLOAD_PATH": "/app/yugo-data/uploads"
+  },
+  "volumes": [
+    "/mnt/user/1_internal/yugo-eats:/app/yugo-data"
+  ]
 }

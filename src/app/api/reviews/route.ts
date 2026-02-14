@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { reviews, reviewPhotos, dishes, users } from "@/lib/db/schema";
 import { eq, desc, and } from "drizzle-orm";
+import { cache } from "@/lib/cache";
 
 export async function GET(req: NextRequest) {
   const dishId = req.nextUrl.searchParams.get("dishId");
+  const cacheKey = "reviews:list";
+
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    const filtered = dishId
+      ? (cached as Record<string, unknown>[]).filter((r: Record<string, unknown>) => r.dishId === parseInt(dishId))
+      : cached;
+    return NextResponse.json(filtered);
+  }
 
   let allReviews = db
     .select({
@@ -24,10 +34,6 @@ export async function GET(req: NextRequest) {
     .orderBy(desc(reviews.createdAt))
     .all();
 
-  if (dishId) {
-    allReviews = allReviews.filter((r) => r.dishId === parseInt(dishId));
-  }
-
   // Attach photos
   const result = allReviews.map((review) => {
     const photos = db
@@ -38,7 +44,10 @@ export async function GET(req: NextRequest) {
     return { ...review, photos };
   });
 
-  return NextResponse.json(result);
+  cache.set(cacheKey, result, 5 * 60 * 1000); // 5 minutes
+
+  const filtered = dishId ? result.filter((r) => r.dishId === parseInt(dishId)) : result;
+  return NextResponse.json(filtered);
 }
 
 export async function POST(req: NextRequest) {
@@ -63,6 +72,9 @@ export async function POST(req: NextRequest) {
         .where(eq(reviews.id, existing.id))
         .run();
       const updated = db.select().from(reviews).where(eq(reviews.id, existing.id)).get();
+      cache.invalidate("reviews");
+      cache.invalidate("dishes");
+      cache.invalidate("stats");
       return NextResponse.json(updated);
     }
   }
@@ -86,6 +98,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  cache.invalidate("reviews");
+  cache.invalidate("dishes");
+  cache.invalidate("stats");
+
   return NextResponse.json(review);
 }
 
@@ -103,6 +119,10 @@ export async function DELETE(req: NextRequest) {
 
   // Delete the review
   db.delete(reviews).where(eq(reviews.id, reviewId)).run();
+
+  cache.invalidate("reviews");
+  cache.invalidate("dishes");
+  cache.invalidate("stats");
 
   return NextResponse.json({ success: true });
 }

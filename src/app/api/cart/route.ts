@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cartItems, dishes, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { cache } from "@/lib/cache";
 
 export async function GET() {
+  const cacheKey = "cart:items";
+  const cached = cache.get(cacheKey);
+  if (cached) return NextResponse.json(cached);
+
   const items = db
     .select({
       id: cartItems.id,
@@ -21,6 +26,8 @@ export async function GET() {
     .leftJoin(dishes, eq(cartItems.dishId, dishes.id))
     .leftJoin(users, eq(cartItems.userId, users.id))
     .all();
+
+  cache.set(cacheKey, items, 10 * 1000); // 10 seconds
 
   return NextResponse.json(items);
 }
@@ -55,6 +62,8 @@ export async function POST(req: NextRequest) {
       .run();
   }
 
+  cache.invalidate("cart");
+
   return NextResponse.json({ ok: true });
 }
 
@@ -71,6 +80,8 @@ export async function PUT(req: NextRequest) {
     db.update(cartItems).set({ quantity }).where(eq(cartItems.id, cartItemId)).run();
   }
 
+  cache.invalidate("cart");
+
   return NextResponse.json({ ok: true });
 }
 
@@ -86,6 +97,8 @@ export async function DELETE(req: NextRequest) {
   } else {
     return NextResponse.json({ error: "Missing id or all param" }, { status: 400 });
   }
+
+  cache.invalidate("cart");
 
   return NextResponse.json({ ok: true });
 }

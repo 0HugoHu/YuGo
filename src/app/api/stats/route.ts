@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { orders, orderItems, dishes, reviews, users } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
+import { cache } from "@/lib/cache";
 
 export async function GET() {
+  const cacheKey = "stats:main";
+  const cached = cache.get(cacheKey);
+  if (cached) return NextResponse.json(cached);
   // Total orders
   const totalOrders = db.select({ count: sql<number>`count(*)` }).from(orders).get()?.count || 0;
 
@@ -144,7 +148,7 @@ export async function GET() {
     .orderBy(orders.createdAt)
     .all();
 
-  return NextResponse.json({
+  const result = {
     totalOrders,
     completedOrders,
     totalDishesServed,
@@ -161,5 +165,9 @@ export async function GET() {
       ...s,
       avgSpice: Math.round((s.avgSpice || 0) * 10) / 10,
     })),
-  });
+  };
+
+  cache.set(cacheKey, result, 5 * 60 * 1000); // 5 minutes
+
+  return NextResponse.json(result);
 }

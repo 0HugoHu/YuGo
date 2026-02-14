@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
+import { imageCache } from "@/lib/image-cache";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+const UPLOAD_DIR = process.env.UPLOAD_PATH || path.join(process.cwd(), "public", "uploads");
 
 const MIME_TYPES: Record<string, string> = {
   ".webp": "image/webp",
@@ -27,20 +28,30 @@ export async function GET(
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   }
 
+  const ext = path.extname(safeName).toLowerCase();
+  const contentType = MIME_TYPES[ext] || "application/octet-stream";
+
+  const headers = {
+    "Content-Type": contentType,
+    "Cache-Control": "public, max-age=31536000, immutable",
+  };
+
+  // Check in-memory image cache first
+  const cached = imageCache.get(safeName);
+  if (cached) {
+    return new NextResponse(new Uint8Array(cached), { headers });
+  }
+
   const filePath = path.join(UPLOAD_DIR, safeName);
 
   if (!fs.existsSync(filePath)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const ext = path.extname(safeName).toLowerCase();
-  const contentType = MIME_TYPES[ext] || "application/octet-stream";
   const fileBuffer = fs.readFileSync(filePath);
 
-  return new NextResponse(fileBuffer, {
-    headers: {
-      "Content-Type": contentType,
-      "Cache-Control": "public, max-age=31536000, immutable",
-    },
-  });
+  // Cache for future requests
+  imageCache.set(safeName, fileBuffer);
+
+  return new NextResponse(new Uint8Array(fileBuffer), { headers });
 }

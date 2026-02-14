@@ -2,9 +2,13 @@ const Database = require("better-sqlite3");
 const path = require("path");
 const fs = require("fs");
 
-const dbPath = "/app/data/yugo-eats.db";
+const dbPath = process.env.DATABASE_PATH || "/app/data/yugo-eats.db";
 const dir = path.dirname(dbPath);
 if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+// Ensure uploads dir exists
+const uploadDir = process.env.UPLOAD_PATH || "/app/public/uploads";
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");

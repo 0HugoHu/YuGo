@@ -2,7 +2,7 @@ import sharp from "sharp";
 import path from "path";
 import fs from "fs";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+const UPLOAD_DIR = process.env.UPLOAD_PATH || path.join(process.cwd(), "public", "uploads");
 const MAX_WIDTH = 1200;
 const THUMB_WIDTH = 400;
 const QUALITY = 80;
@@ -46,7 +46,9 @@ export async function processImage(
 }
 
 export async function deleteImage(imageUrl: string) {
-  const filePath = path.join(process.cwd(), "public", imageUrl);
+  // imageUrl is like /api/uploads/filename.webp — extract filename
+  const filename = path.basename(imageUrl);
+  const filePath = path.join(UPLOAD_DIR, filename);
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
   }
