@@ -42,7 +42,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div id="app-shell" className="mx-auto w-full max-w-[430px] min-h-dvh shadow-xl bg-background md:border-x md:border-border relative overflow-x-hidden">
+        <div id="app-shell" className="mx-auto w-full max-w-[430px] h-dvh shadow-xl bg-background md:border-x md:border-border relative overflow-y-auto overflow-x-hidden">
           <Providers>{children}</Providers>
         </div>
       </body>
