@@ -121,8 +121,24 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: oklch(0.95 0 0);
   }
+  .dark body {
+    background-color: oklch(0.1 0 0);
+  }
+  /* On mobile the wrapper fills the screen, no outer bg visible */
+  @media (max-width: 430px) {
+    body {
+      @apply bg-background;
+    }
+  }
+}
+
+/* Mobile shell: transform creates a containing block so fixed children
+   (bottom nav, modals, drawers) are scoped to the 430px wrapper */
+#app-shell {
+  transform: translateZ(0);
 }
 
 /* Custom scrollbar hide */

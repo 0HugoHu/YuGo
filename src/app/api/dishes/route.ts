@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { dishes, reviews, orderItems } from "@/lib/db/schema";
+import { dishes, reviews, orderItems, reviewPhotos, cartItems } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { cache } from "@/lib/cache";
 
@@ -110,7 +110,28 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Dish ID is required" }, { status: 400 });
   }
 
-  db.delete(dishes).where(eq(dishes.id, parseInt(id))).run();
+  const dishId = parseInt(id);
+
+  // Cascade delete all dependents:
+  // 1. Review photos for reviews on this dish
+  const dishReviews = db.select({ id: reviews.id }).from(reviews).where(eq(reviews.dishId, dishId)).all();
+  for (const review of dishReviews) {
+    db.delete(reviewPhotos).where(eq(reviewPhotos.reviewId, review.id)).run();
+  }
+  // 2. Reviews on this dish
+  db.delete(reviews).where(eq(reviews.dishId, dishId)).run();
+  // 3. Order items referencing this dish
+  db.delete(orderItems).where(eq(orderItems.dishId, dishId)).run();
+  // 4. Cart items referencing this dish
+  db.delete(cartItems).where(eq(cartItems.dishId, dishId)).run();
+  // 5. The dish itself
+  db.delete(dishes).where(eq(dishes.id, dishId)).run();
+
   cache.invalidate("dishes");
+  cache.invalidate("reviews");
+  cache.invalidate("orders");
+  cache.invalidate("cart");
+  cache.invalidate("stats");
+
   return NextResponse.json({ success: true });
 }
